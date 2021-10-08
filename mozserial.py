@@ -14,6 +14,7 @@ import enum
 import io
 import re
 import struct
+import sys
 import typing as ty
 
 
@@ -506,8 +507,13 @@ class Reader:
 		
 		elif tag == DataType.DATE_OBJECT:
 			# These timestamps are always UTC
-			return True, datetime.datetime.fromtimestamp(self.input.read_double(),
-			                                             datetime.timezone.utc)
+			datenum = self.input.read_double()
+			try:
+				dateval = datetime.datetime.fromtimestamp(datenum, datetime.timezone.utc)
+			except:
+				print(f"WARNING: bad timestamp {datenum}", file=sys.stderr)
+				dateval = datetime.datetime.fromtimestamp(0, datetime.timezone.utc)
+			return True, dateval.isoformat()
 		
 		elif tag == DataType.REGEXP_OBJECT:
 			flags = RegExpFlag(data)

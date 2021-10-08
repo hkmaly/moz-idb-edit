@@ -16,7 +16,6 @@ import os
 import sys
 import typing as ty
 
-import jmespath
 import mozidb
 
 __dir__ = pathlib.Path(__file__).parent
@@ -194,11 +193,11 @@ def _safe_repr(object, context, maxlevels, level, sort_dicts):
 	return rep, (rep and not rep.startswith('<')), False
 
 _builtin_scalars = frozenset({str, bytes, bytearray, int, float, complex,
-                              bool, type(None)})
+			      bool, type(None)})
 
 def _recursion(object):
 	return ("<Recursion on %s with id=%s>"
-	        % (type(object).__name__, id(object)))
+		% (type(object).__name__, id(object)))
 
 class _safe_key:
 	"""Helper function for key functions when sorting unorderable objects.
@@ -219,7 +218,7 @@ class _safe_key:
 			return self.obj < other.obj
 		except TypeError:
 			return ((str(type(self.obj)), id(self.obj)) < \
-			        (str(type(other.obj)), id(other.obj)))
+				(str(type(other.obj)), id(other.obj)))
 
 def _safe_tuple(t):
     "Helper function for comparing 2-tuples"
@@ -249,16 +248,18 @@ def main(argv=sys.argv[1:], program=sys.argv[0]):
 	parser = argparse.ArgumentParser(description=__doc__, prog=pathlib.Path(program).name)
 	parser.add_argument("-V", "--version", action="version", version="%(prog)s {0}".format(__version__))
 	parser.add_argument("-x", "--extension", action="store", metavar="EXT_ID",
-	                    help="Use database of the extension with the given Extension ID.")
+			    help="Use database of the extension with the given Extension ID.")
 	parser.add_argument("--dbpath", action="store", metavar="DB_PATH", type=pathlib.Path,
-	                    help="Use database file with the the given path.")
+			    help="Use database file with the the given path.")
 	parser.add_argument("--userctx", action="store",
-	                    help="Use given user context (“Firefox container”) "
-	                         "when determining the database path.")
+			    help="Use given user context (“Firefox container”) "
+				 "when determining the database path.")
 	parser.add_argument("-profile", "--profile", metavar="PROFILE", type=pathlib.Path,
-	                    help="Path to the Firefox/MozTK application profile directory.")
+			    help="Path to the Firefox/MozTK application profile directory.")
+	parser.add_argument("--json", action="store_true",
+			    help="output as json instead of pretty printing")
 	parser.add_argument("key_name", metavar="KEY", default="@", nargs="?",
-	                    help="JMESPath of the key to query.")
+			    help="JMESPath of the key to query.")
 	
 	args = parser.parse_args(argv)
 	
@@ -301,12 +302,18 @@ def main(argv=sys.argv[1:], program=sys.argv[0]):
 		db_path = args.profile / "storage" / "default" / origin_label
 		db_path = db_path / "idb" / "3647222921wleabcEoxlt-eengsairo.sqlite"
 	
-	print(f"Using database path: {db_path}")
+	print(f"Using database path: {db_path}", file=sys.stderr)
 	
 	with mozidb.IndexedDB(db_path) as conn:
-		pretty_printer = PrettyPrinter()
-		pretty_printer.pprint(jmespath.search(args.key_name, IDBObjectWrapper(conn)))
-	
+		out = IDBObjectWrapper(conn)
+		if args.json:
+			import json
+			print(json.dumps({repr(k): v for k,v in out.items()}))
+		else:
+			import jmespath
+			print(f"searching key: {args.key_name}", file=sys.stderr)
+			pretty_printer = PrettyPrinter()
+			pretty_printer.pprint(jmespath.search(args.key_name, out))
 	return 0
 
 

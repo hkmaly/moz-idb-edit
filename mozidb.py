@@ -14,6 +14,7 @@ import io
 import os
 import struct
 import sqlite3
+import sys
 import time
 import typing as ty
 
@@ -227,6 +228,10 @@ class KeyCodec:
 					index += 1
 			
 			if type != KeyType.BINARY:
+				# likely c == -1
+				if c < 0:
+					print(f"WARNING: unhandled non-binary decode value < 0: {c}",file=sys.stderr)
+					c = c * -1
 				result += c.to_bytes(4, "little")
 			else:
 				result.append(c & 0xFF)
@@ -288,6 +293,9 @@ class IndexedDB(sqlite3.Connection):
 		while result is not None:
 			# Validate data
 			key_name, data, file_ids = result
+			if file_ids is not None:
+				print("WARNING: skipping non-None file_id: %s"%file_ids, file=sys.stderr)
+				break
 			assert file_ids is None  #XXX: TODO
 			
 			# Parse data
