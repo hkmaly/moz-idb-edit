@@ -1,5 +1,5 @@
 # moz-idb-edit
-Tool for getting data from Firefox IndexedDB tables (including extension storage data) while the browser is not running. Under Mozilla Public License Version 2.0, as specified in LICENCE.md.
+Tool for getting data from Firefox IndexedDB tables (including extension storage data) while the browser is not running. Under Mozilla Public License Version 2.0, as specified in LICENSE.md.
 
 Based on https://gitlab.com/ntninja/moz-idb-edit and when I say based I mean I'm doing only few small fixes. Ask someone else for editing, see https://gitlab.com/ntninja/moz-idb-edit/-/issues/2.
 
