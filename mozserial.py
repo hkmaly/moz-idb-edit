@@ -505,9 +505,12 @@ class Reader:
 			return True, JSBigIntObj(self.read_bigint())
 		
 		elif tag == DataType.DATE_OBJECT:
+			try:
 			# These timestamps are always UTC
-			return True, datetime.datetime.fromtimestamp(self.input.read_double(),
+			    return True, datetime.datetime.fromtimestamp(self.input.read_double(),
 			                                             datetime.timezone.utc)
+			except ValueError:
+			    return False, None
 		
 		elif tag == DataType.REGEXP_OBJECT:
 			flags = RegExpFlag(data)
