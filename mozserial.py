@@ -529,7 +529,7 @@ class Reader:
 		
 		elif tag == DataType.BACK_REFERENCE_OBJECT:
 			try:
-				return False, self.all_objs[data]
+				return True, self.all_objs[data]
 			except IndexError:
 				raise ParseError("Object backreference to non-existing object") from None
 		
